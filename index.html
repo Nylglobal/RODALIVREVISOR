@@ -2,24 +2,209 @@
 <html>
 <head>
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
   <style>
-    body { margin: 0; }
+    body {
+      margin: 0;
+      font-family: Arial;
+      overflow: hidden;
+    }
+
+    /* 🔝 HEADER */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #69966F;
+      color: white;
+      height: 60px;
+      padding: 0 20px;
+    }
+
+    .logo {
+      width: 50px;
+    }
+
+    .title {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    select {
+      height: 30px;
+    }
+
+    /* 📦 CONTENIDO */
+    .container {
+      display: flex;
+      height: calc(100vh - 60px);
+    }
+
+    /* 📂 SIDEBAR */
+    .sidebar {
+      width: 220px;
+      background: #eee;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .file-btn {
+      display: block;
+      width: 100%;
+      margin-bottom: 8px;
+      padding: 8px;
+      cursor: pointer;
+      border: none;
+      background: #ccc;
+    }
+
+    .file-btn:hover {
+      background: #aaa;
+    }
+
+    /* 🖥 VISOR */
+    .viewer {
+      flex: 1;
+      position: relative;
+    }
+
     model-viewer {
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      height: 100%;
       background: #111;
     }
+
+    /* 🖼 IMAGEN */
+    #imgViewer {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: none;
+      cursor: grab;
+    }
+
   </style>
 </head>
+
 <body>
 
-<model-viewer 
-  src="modelo.glb"
-  auto-rotate 
-  camera-controls 
-  shadow-intensity="1"
-  exposure="1">
-</model-viewer>
+<!-- 🔝 HEADER -->
+<div class="header">
+  <img src="logo.png" class="logo">
+
+  <div class="title">VISOR DE MODELOS 3D</div>
+
+  <select id="modeloSelect">
+    <option>CASA MINI 144</option>
+    <option>CASA MINI XXL 300 X 150</option>
+    <option>CASA RODANTE 2,50 M C/RECTA</option>
+    <option>CASA RODANTE 3 M C/ RECTA</option>
+    <option>CASA RODANTE 3,5 M</option>
+    <option>CASA RODANTE 4 M</option>
+    <option>CASA RODANTE 4,5 1EJE</option>
+    <option>CASA RODANTE 4,5 2 EJES</option>
+    <option>CASA RODANTE 5,20 2 EJES</option>
+    <option>CASA RODANTE6 2 EJES</option>
+  </select>
+</div>
+
+<!-- 📦 CONTENIDO -->
+<div class="container">
+
+  <!-- 📂 SIDEBAR -->
+  <div class="sidebar" id="fileList"></div>
+
+  <!-- 🖥 VISOR -->
+  <div class="viewer">
+
+    <model-viewer 
+      id="viewer3D"
+      auto-rotate 
+      camera-controls 
+      shadow-intensity="2"
+      exposure="0.5"
+      environment-image="neutral"
+      camera-orbit="45deg 75deg 2m"
+      style="display:none;">
+    </model-viewer>
+
+    <img id="imgViewer">
+
+  </div>
+
+</div>
+
+<script>
+const modelos = {
+  "CASA MINI 144": [
+    "SIN DATOS"
+  ],
+  "CASA RODANTE 3,5 M": [
+    "VISTA EXTERIOR.glb",
+    "VISTA INTERIOR 1.glb",
+    "VISTA INTERIOR 2.glb",
+    "vista de panel.png"
+  ]
+};
+
+const select = document.getElementById("modeloSelect");
+const fileList = document.getElementById("fileList");
+const viewer3D = document.getElementById("viewer3D");
+const imgViewer = document.getElementById("imgViewer");
+
+select.addEventListener("change", cargarArchivos);
+
+function cargarArchivos() {
+  const modelo = select.value;
+  fileList.innerHTML = "";
+
+  modelos[modelo]?.forEach(file => {
+    const btn = document.createElement("button");
+    btn.className = "file-btn";
+    btn.innerText = file;
+
+    btn.onclick = () => mostrarArchivo(modelo, file);
+
+    fileList.appendChild(btn);
+  });
+}
+
+function mostrarArchivo(carpeta, archivo) {
+  const ruta = carpeta + "/" + archivo;
+
+  if (archivo.endsWith(".glb")) {
+    viewer3D.style.display = "block";
+    imgViewer.style.display = "none";
+    viewer3D.src = ruta;
+  } else {
+    viewer3D.style.display = "none";
+    imgViewer.style.display = "block";
+    imgViewer.src = ruta;
+  }
+}
+
+/* 🖱 ZOOM Y DRAG PARA IMAGEN */
+let scale = 1;
+let posY = 0;
+
+imgViewer.addEventListener("wheel", (e) => {
+  e.preventDefault();
+  scale += e.deltaY * -0.001;
+  scale = Math.min(Math.max(1, scale), 5);
+  imgViewer.style.transform = `scale(${scale}) translateY(${posY}px)`;
+});
+
+imgViewer.addEventListener("mousedown", () => {
+  imgViewer.style.cursor = "grabbing";
+});
+
+imgViewer.addEventListener("mouseup", () => {
+  imgViewer.style.cursor = "grab";
+});
+
+/* INICIO */
+cargarArchivos();
+</script>
 
 </body>
 </html>
