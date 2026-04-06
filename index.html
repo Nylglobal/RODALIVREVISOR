@@ -21,16 +21,10 @@ body {
   padding: 0 15px;
 }
 
-.logo {
-  width: 40px;
-}
+.logo { width: 40px; }
+.title { font-size: 18px; font-weight: bold; }
 
-.title {
-  font-size: 18px;
-  font-weight: bold;
-}
-
-/* 🛒 GRID MODELOS */
+/* 🛒 GRID */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -44,18 +38,15 @@ body {
   border-radius: 10px;
   padding: 10px;
   text-align: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .card img {
   width: 100%;
-  height: 140px;
-  object-fit: cover;
+  height: 160px;
+  object-fit: contain; /* 🔥 muestra completa */
+  background: #eee;
   border-radius: 8px;
-}
-
-.card h3 {
-  font-size: 16px;
 }
 
 .card button {
@@ -68,38 +59,31 @@ body {
   cursor: pointer;
 }
 
-.card button:hover {
-  background: #4f7c55;
-}
-
+/* 🖥 VISOR FULL WIDTH */
 .viewerContainer {
   display: none;
   position: relative;
-
   width: 100%;
-  max-width: 1000px;   /* opcional para no estirarse demasiado */
-  margin: auto;
 }
 
-/* el visor ya NO ocupa todo el alto */
+/* 🔥 OSCURECER MODELO */
 model-viewer {
   width: 100%;
-  height: auto;
-  aspect-ratio: 16/9;  /* 🔥 clave */
-  background: #111;
-  environment-image="none";
+  height: 70vh;
+  background: #0a0a0a;
 }
 
 #imgViewer {
   width: 100%;
-  height: auto;
+  height: 70vh;
+  object-fit: contain;
   display: none;
 }
 
-/* 🟢 BOTONES VISTAS */
+/* 🟩 BOTONES RECTANGULARES */
 .views {
   position: absolute;
-  right: 10px;
+  right: 15px;
   top: 80px;
   display: flex;
   flex-direction: column;
@@ -107,27 +91,22 @@ model-viewer {
 }
 
 .view-btn {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
   background: #69966F;
   color: white;
-  font-size: 10px;
   border: none;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 12px;
   cursor: pointer;
+  min-width: 140px;
+  text-align: center;
 }
 
 /* 📱 MOBILE */
 @media(max-width: 768px) {
-  .views {
-    right: 5px;
-    top: 70px;
-  }
-
   .view-btn {
-    width: 45px;
-    height: 45px;
-    font-size: 9px;
+    font-size: 11px;
+    min-width: 120px;
   }
 }
 </style>
@@ -142,13 +121,19 @@ model-viewer {
 
 <h2 style="text-align:center;">SELECIONE UM MODELO</h2>
 
-<!-- 🛒 MODELOS -->
 <div class="grid" id="gridModelos"></div>
 
-<!-- 🖥 VISOR -->
 <div class="viewerContainer" id="viewerContainer">
 
-  <model-viewer id="viewer3D" auto-rotate camera-controls></model-viewer>
+  <model-viewer 
+    id="viewer3D"
+    auto-rotate
+    camera-controls
+    exposure="0.35"
+    shadow-intensity="0.6"
+    environment-image="none">
+  </model-viewer>
+
   <img id="imgViewer">
 
   <div class="views" id="views"></div>
@@ -183,7 +168,7 @@ const viewer3D = document.getElementById("viewer3D");
 const imgViewer = document.getElementById("imgViewer");
 const views = document.getElementById("views");
 
-/* 🛒 CREAR TARJETAS */
+/* 🛒 TARJETAS */
 for (let modelo in modelos) {
   const card = document.createElement("div");
   card.className = "card";
@@ -199,25 +184,27 @@ for (let modelo in modelos) {
   grid.appendChild(card);
 }
 
-/* 👁 ABRIR MODELO */
+/* 👁 ABRIR */
 function abrirModelo(modelo) {
   viewerContainer.style.display = "block";
   views.innerHTML = "";
 
-  const archivos = modelos[modelo];
+  modelos[modelo].forEach(file => {
 
-  archivos.forEach((file, index) => {
+    const nombre = file
+      .replace(".glb","")
+      .replace(".png","");
+
     const btn = document.createElement("button");
     btn.className = "view-btn";
-    btn.innerText = "Vista " + (index + 1);
+    btn.innerText = nombre;
 
     btn.onclick = () => mostrarArchivo(modelo, file);
 
     views.appendChild(btn);
   });
 
-  // cargar primero
-  mostrarArchivo(modelo, archivos[0]);
+  mostrarArchivo(modelo, modelos[modelo][0]);
 }
 
 /* 📂 MOSTRAR */
