@@ -1,152 +1,171 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial;
-      overflow: hidden;
-    }
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #f5f5f5;
+}
 
-    /* 🔝 HEADER */
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: #69966F;
-      color: white;
-      height: 60px;
-      padding: 0 20px;
-    }
+/* 🔝 HEADER */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #69966F;
+  color: white;
+  height: 60px;
+  padding: 0 15px;
+}
 
-    .logo {
-      width: 50px;
-    }
+.logo {
+  width: 40px;
+}
 
-    .title {
-      font-size: 20px;
-      font-weight: bold;
-    }
+.title {
+  font-size: 18px;
+  font-weight: bold;
+}
 
-    select {
-      height: 30px;
-    }
+/* 🛒 GRID MODELOS */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px;
+  padding: 15px;
+}
 
-    /* 📦 CONTENIDO */
-    .container {
-      display: flex;
-      height: calc(100vh - 60px);
-    }
+/* 🧱 CARD */
+.card {
+  background: white;
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
 
-    /* 📂 SIDEBAR */
-    .sidebar {
-      width: 220px;
-      background: #eee;
-      overflow-y: auto;
-      padding: 10px;
-    }
+.card img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 8px;
+}
 
-    .file-btn {
-      display: block;
-      width: 100%;
-      margin-bottom: 8px;
-      padding: 8px;
-      cursor: pointer;
-      border: none;
-      background: #ccc;
-    }
+.card h3 {
+  font-size: 16px;
+}
 
-    .file-btn:hover {
-      background: #aaa;
-    }
+.card button {
+  background: #69966F;
+  color: white;
+  border: none;
+  padding: 10px;
+  width: 100%;
+  border-radius: 6px;
+  cursor: pointer;
+}
 
-    /* 🖥 VISOR */
-    .viewer {
-      flex: 1;
-      position: relative;
-    }
+.card button:hover {
+  background: #4f7c55;
+}
 
-    model-viewer {
-      width: 100%;
-      height: 100%;
-      background: #111;
-    }
+/* 🖥 VISOR */
+.viewerContainer {
+  display: none;
+  height: calc(100vh - 60px);
+  position: relative;
+}
 
-    /* 🖼 IMAGEN */
-    #imgViewer {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: none;
-      cursor: grab;
-    }
+model-viewer {
+  width: 100%;
+  height: 100%;
+  background: #111;
+}
 
-  </style>
+#imgViewer {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: none;
+}
+
+/* 🟢 BOTONES VISTAS */
+.views {
+  position: absolute;
+  right: 10px;
+  top: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.view-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #69966F;
+  color: white;
+  font-size: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+/* 📱 MOBILE */
+@media(max-width: 768px) {
+  .views {
+    right: 5px;
+    top: 70px;
+  }
+
+  .view-btn {
+    width: 45px;
+    height: 45px;
+    font-size: 9px;
+  }
+}
+</style>
 </head>
 
 <body>
 
-<!-- 🔝 HEADER -->
 <div class="header">
   <img src="logo.png" class="logo">
-
   <div class="title">VISOR DE MODELOS 3D</div>
-
-  <select id="modeloSelect">
-    <option>CASA RODANTE 3 M C/ RECTA</option>
-    <option>CASA RODANTE 3,5 M</option>
-    <option>TRAILER 4 METROS</option>
-    <option>TRAILER 4,5METROS</option>
-  </select>
 </div>
 
-<!-- 📦 CONTENIDO -->
-<div class="container">
+<h2 style="text-align:center;">SELECIONE UM MODELO</h2>
 
-  <!-- 📂 SIDEBAR -->
-  <div class="sidebar" id="fileList"></div>
+<!-- 🛒 MODELOS -->
+<div class="grid" id="gridModelos"></div>
 
-  <!-- 🖥 VISOR -->
-  <div class="viewer">
+<!-- 🖥 VISOR -->
+<div class="viewerContainer" id="viewerContainer">
 
-    <model-viewer 
-      id="viewer3D"
-      auto-rotate 
-      camera-controls 
-      shadow-intensity="2"
-      exposure="0.5"
-      environment-image="neutral"
-      camera-orbit="45deg 75deg 2m"
-      style="display:none;">
-    </model-viewer>
+  <model-viewer id="viewer3D" auto-rotate camera-controls></model-viewer>
+  <img id="imgViewer">
 
-    <img id="imgViewer">
-
-  </div>
+  <div class="views" id="views"></div>
 
 </div>
 
 <script>
 const modelos = {
-  "CASA MINI 144": [
-    "SIN DATOS"
-  ],
   "CASA RODANTE 3,5 M": [
     "VISTA EXTERIOR.glb",
     "VISTA INTERIOR 1.glb",
     "VISTA INTERIOR 2.glb",
     "vista de panel.png"
   ],
-    "TRAILER 4 METROS": [
+  "TRAILER 4 METROS": [
     "TRAILER 4M VISTA EXTERIOR.glb",
     "TRAILER 4M INTERIOR VIAJE.glb",
     "TRAILER 4M DESCANSO.glb",
     "TRAILER 4M APERTURAS.glb"
-  ]
-  ,
-    "TRAILER 4,5METROS": [
+  ],
+  "TRAILER 4,5METROS": [
     "TRAILER 4,5M EXTERIOR.glb",
     "TRAILER 4,5M VIAJE.glb",
     "TRAILER 4,5M DESCANSO.glb",
@@ -154,28 +173,50 @@ const modelos = {
   ]
 };
 
-const select = document.getElementById("modeloSelect");
-const fileList = document.getElementById("fileList");
+const grid = document.getElementById("gridModelos");
+const viewerContainer = document.getElementById("viewerContainer");
 const viewer3D = document.getElementById("viewer3D");
 const imgViewer = document.getElementById("imgViewer");
+const views = document.getElementById("views");
 
-select.addEventListener("change", cargarArchivos);
+/* 🛒 CREAR TARJETAS */
+for (let modelo in modelos) {
+  const card = document.createElement("div");
+  card.className = "card";
 
-function cargarArchivos() {
-  const modelo = select.value;
-  fileList.innerHTML = "";
+  card.innerHTML = `
+    <img src="preview.jpg">
+    <h3>${modelo}</h3>
+    <button onclick="abrirModelo('${modelo}')">
+      VER VISTAS DO MODELO
+    </button>
+  `;
 
-  modelos[modelo]?.forEach(file => {
+  grid.appendChild(card);
+}
+
+/* 👁 ABRIR MODELO */
+function abrirModelo(modelo) {
+  viewerContainer.style.display = "block";
+  views.innerHTML = "";
+
+  const archivos = modelos[modelo];
+
+  archivos.forEach((file, index) => {
     const btn = document.createElement("button");
-    btn.className = "file-btn";
-    btn.innerText = file;
+    btn.className = "view-btn";
+    btn.innerText = "Vista " + (index + 1);
 
     btn.onclick = () => mostrarArchivo(modelo, file);
 
-    fileList.appendChild(btn);
+    views.appendChild(btn);
   });
+
+  // cargar primero
+  mostrarArchivo(modelo, archivos[0]);
 }
 
+/* 📂 MOSTRAR */
 function mostrarArchivo(carpeta, archivo) {
   const ruta = carpeta + "/" + archivo;
 
@@ -189,28 +230,6 @@ function mostrarArchivo(carpeta, archivo) {
     imgViewer.src = ruta;
   }
 }
-
-/* 🖱 ZOOM Y DRAG PARA IMAGEN */
-let scale = 1;
-let posY = 0;
-
-imgViewer.addEventListener("wheel", (e) => {
-  e.preventDefault();
-  scale += e.deltaY * -0.001;
-  scale = Math.min(Math.max(1, scale), 5);
-  imgViewer.style.transform = `scale(${scale}) translateY(${posY}px)`;
-});
-
-imgViewer.addEventListener("mousedown", () => {
-  imgViewer.style.cursor = "grabbing";
-});
-
-imgViewer.addEventListener("mouseup", () => {
-  imgViewer.style.cursor = "grab";
-});
-
-/* INICIO */
-cargarArchivos();
 </script>
 
 </body>
