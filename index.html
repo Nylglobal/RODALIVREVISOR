@@ -24,12 +24,31 @@ body {
 .logo { width: 40px; }
 .title { font-size: 18px; font-weight: bold; }
 
+/* 🟩 BARRA */
+.toggleBar {
+  background: #69966F;
+  color: white;
+  text-align: center;
+  padding: 10px;
+  cursor: pointer;
+  display: none;
+  font-weight: bold;
+}
+
 /* 🛒 GRID */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 15px;
   padding: 15px;
+  transition: all 0.4s ease;
+}
+
+.grid.hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  height: 0;
+  overflow: hidden;
 }
 
 /* 🧱 CARD */
@@ -44,7 +63,7 @@ body {
 .card img {
   width: 100%;
   height: 160px;
-  object-fit: contain; /* 🔥 muestra completa */
+  object-fit: contain;
   background: #eee;
   border-radius: 8px;
 }
@@ -59,19 +78,17 @@ body {
   cursor: pointer;
 }
 
-/* 🖥 VISOR FULL WIDTH */
+/* 🖥 VISOR */
 .viewerContainer {
   display: none;
   position: relative;
   width: 100%;
 }
 
-/* 🔥 OSCURECER MODELO */
-/* 🖥 VISOR */
 model-viewer {
   width: 100%;
   height: 70vh;
-  background: #000; /* 🔥 negro real */
+  background: #000;
 }
 
 #imgViewer {
@@ -81,7 +98,7 @@ model-viewer {
   display: none;
 }
 
-/* 🟩 BOTONES RECTANGULARES */
+/* 🟩 BOTONES */
 .views {
   position: absolute;
   right: 15px;
@@ -100,7 +117,6 @@ model-viewer {
   font-size: 12px;
   cursor: pointer;
   min-width: 140px;
-  text-align: center;
 }
 
 /* 📱 MOBILE */
@@ -120,21 +136,24 @@ model-viewer {
   <div class="title">VISOR DE MODELOS 3D</div>
 </div>
 
+<div class="toggleBar" id="toggleBar" onclick="toggleModelos()">
+  ⬇ MOSTRAR MODELOS
+</div>
+
 <h2 style="text-align:center;">SELECIONE UM MODELO</h2>
 
 <div class="grid" id="gridModelos"></div>
 
 <div class="viewerContainer" id="viewerContainer">
 
-<model-viewer 
-  id="viewer3D"
-  auto-rotate
-  camera-controls
-  exposure="0.4"
-  shadow-intensity="0.8"
-  environment-image="neutral"
-  style="background:#000;">
-</model-viewer>
+  <model-viewer 
+    id="viewer3D"
+    auto-rotate
+    camera-controls
+    exposure="0.4"
+    shadow-intensity="0.8"
+    environment-image="neutral">
+  </model-viewer>
 
   <img id="imgViewer">
 
@@ -169,6 +188,9 @@ const viewerContainer = document.getElementById("viewerContainer");
 const viewer3D = document.getElementById("viewer3D");
 const imgViewer = document.getElementById("imgViewer");
 const views = document.getElementById("views");
+const toggleBar = document.getElementById("toggleBar");
+
+let modelosVisibles = true;
 
 /* 🛒 TARJETAS */
 for (let modelo in modelos) {
@@ -186,16 +208,13 @@ for (let modelo in modelos) {
   grid.appendChild(card);
 }
 
-/* 👁 ABRIR */
+/* 👁 ABRIR MODELO */
 function abrirModelo(modelo) {
   viewerContainer.style.display = "block";
   views.innerHTML = "";
 
   modelos[modelo].forEach(file => {
-
-    const nombre = file
-      .replace(".glb","")
-      .replace(".png","");
+    const nombre = file.replace(".glb","").replace(".png","");
 
     const btn = document.createElement("button");
     btn.className = "view-btn";
@@ -207,6 +226,25 @@ function abrirModelo(modelo) {
   });
 
   mostrarArchivo(modelo, modelos[modelo][0]);
+
+  /* OCULTAR GRID */
+  grid.classList.add("hidden");
+  toggleBar.style.display = "block";
+  toggleBar.innerText = "⬇ MOSTRAR MODELOS";
+  modelosVisibles = false;
+}
+
+/* 🔁 TOGGLE */
+function toggleModelos() {
+  if (modelosVisibles) {
+    grid.classList.add("hidden");
+    toggleBar.innerText = "⬇ MOSTRAR MODELOS";
+  } else {
+    grid.classList.remove("hidden");
+    toggleBar.innerText = "⬆ OCULTAR MODELOS";
+  }
+
+  modelosVisibles = !modelosVisibles;
 }
 
 /* 📂 MOSTRAR */
